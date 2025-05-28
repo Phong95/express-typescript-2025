@@ -4,10 +4,20 @@ import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { validateRequest } from "@/common/utils/httpHandlers";
-import { userController } from "./userController";
+import { userController } from "./user.controller";
 import { CreateUserSchema, UserSchema } from "@/models/user/user.schema";
+import {
+  authenticate,
+  optionalAuthenticate,
+  requirePolicy,
+} from "@/services/auth.service";
+import { Policies } from "@/constants/policies.constant";
+import { allowAnonymous } from "@/common/middleware/authentication.middleware";
 
 export const userRouter: Router = express.Router();
+// Apply optional authentication to all routes
+userRouter.use(optionalAuthenticate());
+
 //#region Document
 export const userRegistry = new OpenAPIRegistry();
 
@@ -56,7 +66,8 @@ userRegistry.registerPath({
 //#endregion
 userRouter.post(
   "",
+  allowAnonymous,
   validateRequest(CreateUserSchema),
   userController.createUser
 );
-userRouter.get("", userController.listUser);
+userRouter.get("", requirePolicy(Policies.Admin), userController.listUser);

@@ -4,7 +4,7 @@ import {
 } from "@asteasolutions/zod-to-openapi";
 
 import { healthCheckRegistry } from "@/controllers/healthCheck/healthCheckRouter";
-import { userRegistry } from "@/controllers/user/userRouter";
+import { userRegistry } from "@/controllers/user/user.router";
 
 export type OpenAPIDocument = ReturnType<
   OpenApiGeneratorV3["generateDocument"]

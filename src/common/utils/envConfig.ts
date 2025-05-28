@@ -20,6 +20,18 @@ const envSchema = z.object({
 
   COMMON_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(1000),
   MONGODB_URI: z.string().min(1),
+
+  JWT_SIGNING_KEY: z.string().min(1),
+  JWT_ISSUER: z.string().min(1),
+  JWT_AUDIENCE: z.string().min(1),
+  JWT_RT_AUDIENCE: z.string().min(1),
+  USER_TOKEN_COOKIE: z.string().min(1),
+  USER_REFRESH_TOKEN_COOKIE: z.string().min(1),
+  ADMIN_TOKEN_COOKIE: z.string().min(1),
+  ADMIN_REFRESH_TOKEN_COOKIE: z.string().min(1),
+
+  REDIS_HOST: z.string().min(1).default("localhost"),
+  REDIS_PORT: z.coerce.number().int().positive().default(6378),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

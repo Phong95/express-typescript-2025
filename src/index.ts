@@ -1,13 +1,15 @@
 import { env } from "@/common/utils/envConfig";
-import { app, logger } from "@/server";
+import { app } from "@/server";
 import { MongoDBConnection } from "./common/database/mongodb";
+import chalk from "chalk";
+import { logger } from "./services/logger.service";
 
 const startServer = async () => {
   try {
     // Connect to database first
     const db = MongoDBConnection.getInstance();
     await db.connect();
-    logger.info("Database connected successfully");
+    logger.info(chalk.cyan("Database connected successfully"));
 
     // Start the server after database connection
     const server = app.listen(env.PORT, () => {

@@ -15,11 +15,27 @@ export const validateRequest =
       });
       next();
     } catch (err) {
-      const errorMessage = `Invalid input: ${(err as ZodError).errors
-        .map((e) => e.message)
-        .join(", ")}`;
+      const zodError = err as ZodError;
 
-      APIResponseHelper.badRequestResult(res, errorMessage);
+      // Create structured error response
+      const validationErrors = zodError.errors.map((error) => ({
+        field: error.path.join("."),
+        message:
+          error.message === "Required"
+            ? `${error.path.join(".")} is required`
+            : error.message,
+        code: error.code,
+      }));
+
+      // Also create a simple message for backwards compatibility
+      const simpleMessage = validationErrors
+        .map((err) => err.message)
+        .join(", ");
+
+      APIResponseHelper.badRequestResult(
+        res,
+        `Validation failed: ${simpleMessage}`
+      );
       return;
     }
   };
