@@ -25,6 +25,8 @@
 		"express-rate-limit": "7.5.0",
 		"helmet": "8.1.0",
 		"http-status-codes": "2.3.0",
+		"mongodb": "^6.16.0",
+		"mongoose": "^8.15.1",
 		"pino": "9.7.0",
 		"pino-http": "10.4.0",
 		"swagger-ui-express": "5.0.1",
@@ -46,9 +48,14 @@
 		"vitest": "3.1.4"
 	},
 	"tsup": {
-		"entry": ["src/index.ts"],
+		"entry": [
+			"src/index.ts"
+		],
 		"outDir": "dist",
-		"format": ["esm", "cjs"],
+		"format": [
+			"esm",
+			"cjs"
+		],
 		"target": "es2020",
 		"sourcemap": true,
 		"clean": true,

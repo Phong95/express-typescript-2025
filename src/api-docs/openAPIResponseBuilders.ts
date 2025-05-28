@@ -1,19 +1,38 @@
+import { RestfulAPIResponseSchema } from "@/models/base/restful-api-response.model";
 import { StatusCodes } from "http-status-codes";
 import type { z } from "zod";
 
-import { ServiceResponseSchema } from "@/common/models/serviceResponse";
+export function createApiResponse(
+  schema: z.ZodTypeAny,
+  description: string,
+  statusCode = StatusCodes.OK
+) {
+  return {
+    [statusCode]: {
+      description,
+      content: {
+        "application/json": {
+          schema: RestfulAPIResponseSchema(schema),
+        },
+      },
+    },
+  };
+}
 
-export function createApiResponse(schema: z.ZodTypeAny, description: string, statusCode = StatusCodes.OK) {
-	return {
-		[statusCode]: {
-			description,
-			content: {
-				"application/json": {
-					schema: ServiceResponseSchema(schema),
-				},
-			},
-		},
-	};
+// Helper function for multiple status codes
+export function createApiResponses(
+  responses: Array<{
+    schema: z.ZodTypeAny;
+    description: string;
+    statusCode: number;
+  }>
+) {
+  return responses.reduce((acc, { schema, description, statusCode }) => {
+    return {
+      ...acc,
+      ...createApiResponse(schema, description, statusCode),
+    };
+  }, {});
 }
 
 // Use if you want multiple responses for a single endpoint
