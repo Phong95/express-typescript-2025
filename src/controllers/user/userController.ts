@@ -18,7 +18,10 @@ class UserController {
       APIResponseHelper.okResult(res, users);
       return;
     } catch (error) {
-      APIResponseHelper.internalServerErrorResult(res, "Internal server error");
+      APIResponseHelper.internalServerErrorResult(
+        res,
+        "Internal server error a"
+      );
       return;
     }
   };
