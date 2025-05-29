@@ -6,12 +6,12 @@ import { app } from "@/server";
 
 describe("Health Check API endpoints", () => {
   it("GET / - success", async () => {
-    const response = await request(app).get("/health-check");
-    const result: RestfulAPIResponseModel<unknown> = response.body;
+    const response = await request(app).get("/api/v1/health-check");
+    const result: RestfulAPIResponseModel<string> = response.body;
 
     expect(response.statusCode).toEqual(StatusCodes.OK);
     expect(result.success).toBeTruthy();
-    expect(result.result).toBeNull();
+    expect(result.result).toBeUndefined();
     expect(result.message).toEqual("Service is healthy");
   });
 });

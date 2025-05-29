@@ -16,5 +16,5 @@ healthCheckRegistry.registerPath({
 });
 
 healthCheckRouter.get("/", (_req: Request, res: Response) => {
-  APIResponseHelper.okResult(res, "Service is healthy");
+  APIResponseHelper.okResult(res, undefined, "Service is healthy");
 });
