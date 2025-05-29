@@ -136,11 +136,8 @@ jobs:
         image: mongo:7
         ports:
           - 27017:27017
-        env:
-          MONGO_INITDB_ROOT_USERNAME: admin
-          MONGO_INITDB_ROOT_PASSWORD: password
         options: >-
-          --health-cmd "echo 'db.runCommand(\"ping\").ok' | mongosh --quiet"
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -196,7 +193,7 @@ jobs:
 
           echo "Waiting for MongoDB..."
           for i in {1..30}; do
-            if mongosh --host localhost:27017 --username admin --password password --authenticationDatabase admin --eval "db.adminCommand('ping')" --quiet 2>/dev/null | grep -q '"ok" : 1'; then
+            if mongosh --host localhost:27017 --eval "db.adminCommand('ping')" --quiet 2>/dev/null | grep -q '"ok" : 1'; then
               echo "MongoDB is ready!"
               break
             fi
@@ -209,7 +206,7 @@ jobs:
         env:
           NODE_ENV: test
           REDIS_URL: redis://localhost:6379
-          MONGODB_URI: mongodb://admin:password@localhost:27017/test?authSource=admin
+          MONGODB_URI: mongodb://localhost:27017/test
 
   # Test coverage
   coverage:
@@ -230,11 +227,8 @@ jobs:
         image: mongo:7
         ports:
           - 27017:27017
-        env:
-          MONGO_INITDB_ROOT_USERNAME: admin
-          MONGO_INITDB_ROOT_PASSWORD: password
         options: >-
-          --health-cmd "echo 'db.runCommand(\"ping\").ok' | mongosh --quiet"
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -267,16 +261,31 @@ jobs:
       - name: Wait for services
         run: |
           echo "Waiting for Redis..."
-          timeout 30 bash -c 'until redis-cli -h localhost -p 6379 ping; do sleep 1; done'
+          for i in {1..30}; do
+            if redis-cli -h localhost -p 6379 ping | grep -q PONG; then
+              echo "Redis is ready!"
+              break
+            fi
+            echo "Redis not ready, waiting... ($i/30)"
+            sleep 2
+          done
+
           echo "Waiting for MongoDB..."
-          timeout 30 bash -c 'until mongosh --host localhost:27017 --username admin --password password --authenticationDatabase admin --eval "db.adminCommand({ping: 1})"; do sleep 1; done'
+          for i in {1..30}; do
+            if mongosh --host localhost:27017 --eval "db.adminCommand('ping')" --quiet 2>/dev/null | grep -q '"ok" : 1'; then
+              echo "MongoDB is ready!"
+              break
+            fi
+            echo "MongoDB not ready, waiting... ($i/30)"
+            sleep 2
+          done
 
       - name: Run tests with coverage
         run: npm run test:cov
         env:
           NODE_ENV: test
           REDIS_URL: redis://localhost:6379
-          MONGODB_URI: mongodb://admin:password@localhost:27017/test?authSource=admin
+          MONGODB_URI: mongodb://localhost:27017/test
 
       - name: Upload coverage reports
         uses: codecov/codecov-action@v4
