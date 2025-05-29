@@ -14,19 +14,19 @@ class UserController {
 
   public listUser = async (req: Request, res: Response) => {
     try {
-      taskQueueService.registerTask<string>(
-        "abc",
-        async (input, context, job) => {
-          setTimeout(() => {
-            logger.info("abc task input:", input);
-            logger.info("context:", context);
-            logger.info("job id:", job.id);
-          }, 5000);
+      // taskQueueService.registerTask<string>(
+      //   "abc",
+      //   async (input, context, job) => {
+      //     setTimeout(() => {
+      //       logger.info("abc task input:", input);
+      //       logger.info("context:", context);
+      //       logger.info("job id:", job.id);
+      //     }, 5000);
 
-          return "done"; // or any result you want to return
-        }
-      );
-      taskQueueService.enqueueTask("abc");
+      //     return "done"; // or any result you want to return
+      //   }
+      // );
+      // taskQueueService.enqueueTask("abc");
 
       const users = await userRepository.getsAsync();
       APIResponseHelper.okResult(res, users);

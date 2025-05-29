@@ -14,19 +14,7 @@ export interface PolicyConfig {
 export class AuthorizationMiddleware {
   private policies: Map<string, PolicyConfig> = new Map();
 
-  constructor() {
-    this.setupDefaultPolicies();
-  }
-
-  private setupDefaultPolicies() {
-    // Your existing setupDefaultPolicies code stays the same
-    this.addPolicy({
-      name: Policies.Admin,
-      schemes: [AuthenticationSchemes.Global],
-      roles: [Roles.Admin],
-    });
-    // ... other policies
-  }
+  constructor() {}
 
   addPolicy(config: PolicyConfig) {
     this.policies.set(config.name, config);

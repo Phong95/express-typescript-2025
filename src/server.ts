@@ -4,10 +4,12 @@ import helmet from "helmet";
 import { openAPIRouter } from "@/api-docs/openAPIRouter";
 import { healthCheckRouter } from "@/controllers/healthCheck/healthCheckRouter";
 import { userRouter } from "@/controllers/user/user.router";
-import errorHandler from "@/common/middleware/errorHandler";
-import rateLimiter from "@/common/middleware/rateLimiter";
-import requestLogger from "@/common/middleware/requestLogger";
+import errorHandler from "@/middlewares/error-handler.middleware";
+import rateLimiter from "@/middlewares/rate-limiter.middleware";
+import requestLogger from "@/middlewares/request-logger.middleware";
 import { env } from "@/common/utils/envConfig";
+import { registerRouter } from "./controllers/IAM/register.controller";
+import { authenticateRouter } from "./controllers/IAM/authenticate.controller";
 
 const app: Express = express();
 
@@ -25,8 +27,14 @@ app.use(rateLimiter);
 app.use(requestLogger);
 
 // Routes
-app.use("/api/health-check", healthCheckRouter);
-app.use("/api/users", userRouter);
+app.use("/api/v1/health-check", healthCheckRouter);
+app.use("/api/v1/users", userRouter);
+app.use("/api/v1/register", registerRouter);
+app.use("/api/v1/authenticate", authenticateRouter);
+
+app.use((req, res) => {
+  res.status(404).json({ message: "Invalid endpoint" });
+});
 
 // Swagger UI
 app.use(openAPIRouter);

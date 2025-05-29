@@ -3,6 +3,7 @@ import { app } from "@/server";
 import { MongoDBConnection } from "./common/database/mongodb";
 import chalk from "chalk";
 import { logger } from "./services/logger.service";
+import { cronJobService } from "./services/cron-jobs.service";
 
 const startServer = async () => {
   try {
@@ -18,6 +19,10 @@ const startServer = async () => {
         `Server (${NODE_ENV}) running on port http://${HOST}:${PORT}`
       );
     });
+
+    // Start cron jobs
+
+    cronJobService.executeJob();
 
     const onCloseSignal = async () => {
       logger.info("sigint received, shutting down");

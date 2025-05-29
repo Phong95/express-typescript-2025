@@ -58,6 +58,7 @@ export const LoginUserSchema = z.object({
   body: z.object({
     email: z.string().email("Invalid email format"),
     password: z.string().min(1, "Password is required"),
+    otp: z.string().optional(),
   }),
 });
 
@@ -225,7 +226,7 @@ export const GetUsersQuerySchema = z.object({
 
 // Schema for deleting a user
 export const DeleteUserSchema = z.object({
-  params: z.object({
+  query: z.object({
     id: z.string().min(1, "User ID is required"),
   }),
 });

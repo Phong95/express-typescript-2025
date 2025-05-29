@@ -5,3 +5,8 @@ services:
     ports:
       - "6378:6379"
     restart: unless-stopped
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    restart: unless-stopped

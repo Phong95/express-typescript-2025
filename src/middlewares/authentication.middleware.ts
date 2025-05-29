@@ -115,8 +115,9 @@ export class AuthenticationMiddleware {
         const schemesToTry = schemeName
           ? [schemeName]
           : [AuthenticationSchemes.Default];
-
+        logger.info(schemesToTry);
         for (const scheme of schemesToTry) {
+          console.log(this.schemes);
           const schemeConfig = this.schemes.get(scheme);
           if (!schemeConfig) continue;
 

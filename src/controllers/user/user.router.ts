@@ -5,14 +5,25 @@ import { z } from "zod";
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
 import { validateRequest } from "@/common/utils/httpHandlers";
 import { userController } from "./user.controller";
-import { CreateUserSchema, UserSchema } from "@/models/user/user.schema";
+import {
+  CreateUserSchema,
+  DeleteUserSchema,
+  UserSchema,
+} from "@/models/user/user.schema";
 import {
   authenticate,
   optionalAuthenticate,
   requirePolicy,
 } from "@/services/auth.service";
 import { Policies } from "@/constants/policies.constant";
-import { allowAnonymous } from "@/common/middleware/authentication.middleware";
+import {
+  allowAnonymous,
+  AuthenticatedRequest,
+} from "@/middlewares/authentication.middleware";
+import type { Request, RequestHandler, Response } from "express";
+import { userRepository } from "@/repositories/user/user.repository";
+import { APIResponseHelper } from "@/helper/api-response.helper";
+import { AuthenticationSchemes } from "@/constants/authentication-schemes.constant";
 
 export const userRouter: Router = express.Router();
 // Apply optional authentication to all routes
@@ -70,4 +81,27 @@ userRouter.post(
   validateRequest(CreateUserSchema),
   userController.createUser
 );
-userRouter.get("", requirePolicy(Policies.Admin), userController.listUser);
+userRouter.get(
+  "",
+  authenticate(AuthenticationSchemes.Global),
+  async (req: AuthenticatedRequest, res: Response) => {
+    userController.listUser(req, res);
+  }
+);
+
+userRouter.delete(
+  "",
+  authenticate(AuthenticationSchemes.BearerToken),
+  requirePolicy(Policies.BearerUser),
+  validateRequest(DeleteUserSchema),
+  async (req: AuthenticatedRequest, res: Response) => {
+    const findedUser = await userRepository.getAsync({ _id: req.query.id });
+    if (findedUser) {
+      const result = await userRepository.deleteAsync(findedUser);
+      APIResponseHelper.okResult(res, result);
+      return;
+    }
+
+    APIResponseHelper.failedResult(res);
+  }
+);

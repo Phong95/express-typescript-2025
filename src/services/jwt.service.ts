@@ -1,8 +1,12 @@
 import jwt, { SignOptions } from "jsonwebtoken";
 import { Request } from "express";
+import { env } from "@/common/utils/envConfig";
+import { TokenExtractionStrategy } from "@/middlewares/authentication.middleware";
 
 export interface JwtPayload {
-  sub: string;
+  id: string;
+  email: string;
+  sub?: string;
   role: string;
   aud?: string;
   iss?: string;
@@ -12,7 +16,7 @@ export interface JwtPayload {
 
 export class JwtService {
   private static getSigningKey(): string {
-    return process.env.JWT_SIGNING_KEY || "your-secret-key";
+    return env.JWT_SIGNING_KEY || "your-secret-key";
   }
 
   static verifyToken(token: string, options?: jwt.VerifyOptions): JwtPayload {
@@ -35,8 +39,10 @@ export class JwtService {
     return null;
   }
 
-  static extractFromCookie(req: Request, cookieName: string): string | null {
-    return req.cookies[cookieName] || null;
+  static extractFromCookie(cookieName: string): TokenExtractionStrategy {
+    return (req: Request) => {
+      return req.cookies?.[cookieName] || null;
+    };
   }
 
   static extractFromQuery(

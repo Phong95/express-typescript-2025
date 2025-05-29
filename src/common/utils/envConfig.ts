@@ -32,6 +32,9 @@ const envSchema = z.object({
 
   REDIS_HOST: z.string().min(1).default("localhost"),
   REDIS_PORT: z.coerce.number().int().positive().default(6378),
+
+  TOKEN_EXPIRES: z.coerce.number().int().positive().default(3600),
+  REFRESH_TOKEN_EXPIRES: z.coerce.number().int().positive().default(1296000),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

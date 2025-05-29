@@ -7,10 +7,10 @@ export interface IUser extends IBaseEntity {
   password: string;
   salt: string;
   role: string;
-  otp: string;
-  isActivate: boolean;
-  avatarUrl: string;
-  isLocked: boolean;
+  otp?: string;
+  isActivate?: boolean;
+  avatarUrl?: string;
+  isLocked?: boolean;
 }
 
 const userSchema = new Schema<IUser>(
@@ -29,5 +29,17 @@ const userSchema = new Schema<IUser>(
     timestamps: true, // This adds createdAt and updatedAt automatically
   }
 );
+
+export interface IUserRegister {
+  name: string;
+  email: string;
+  password: string;
+  avatarUrl: string;
+}
+export interface IUserLogin {
+  email: string;
+  password: string;
+  otp?: string;
+}
 
 export const UserModel = model<IUser>("User", userSchema);
