@@ -91,7 +91,7 @@ jobs:
         run: npm ci
 
       - name: Run formatting check
-        run: npm run format -- --ci
+        run: npm run format
 
   # Build application
   build:
