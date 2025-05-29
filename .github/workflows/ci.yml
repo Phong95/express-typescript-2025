@@ -140,7 +140,7 @@ jobs:
           MONGO_INITDB_ROOT_USERNAME: admin
           MONGO_INITDB_ROOT_PASSWORD: password
         options: >-
-          --health-cmd "mongosh --eval 'db.adminCommand({ping: 1})'"
+          --health-cmd "echo 'db.runCommand(\"ping\").ok' | mongosh --quiet"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -173,9 +173,18 @@ jobs:
       - name: Wait for services
         run: |
           echo "Waiting for Redis..."
-          timeout 30 bash -c 'until redis-cli -h localhost -p 6379 ping; do sleep 1; done'
+          until redis-cli -h localhost -p 6379 ping | grep -q PONG; do
+            echo "Redis not ready, waiting..."
+            sleep 2
+          done
+          echo "Redis is ready!"
+
           echo "Waiting for MongoDB..."
-          timeout 30 bash -c 'until mongosh --host localhost:27017 --username admin --password password --authenticationDatabase admin --eval "db.adminCommand({ping: 1})"; do sleep 1; done'
+          until mongosh --host localhost:27017 --username admin --password password --authenticationDatabase admin --eval "db.adminCommand('ping')" --quiet | grep -q '"ok" : 1'; do
+            echo "MongoDB not ready, waiting..."
+            sleep 2
+          done
+          echo "MongoDB is ready!"
 
       - name: Run tests
         run: npm run test
@@ -207,7 +216,7 @@ jobs:
           MONGO_INITDB_ROOT_USERNAME: admin
           MONGO_INITDB_ROOT_PASSWORD: password
         options: >-
-          --health-cmd "mongosh --eval 'db.adminCommand({ping: 1})'"
+          --health-cmd "echo 'db.runCommand(\"ping\").ok' | mongosh --quiet"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
