@@ -1,4 +1,4 @@
-import { IRepositoryBase } from "./irepository-base";
+import type { IRepositoryBase } from "./irepository-base";
 
 /**
  * Generic repository interface that extends the base repository

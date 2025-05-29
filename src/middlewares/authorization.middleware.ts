@@ -1,5 +1,5 @@
-import { Response, NextFunction } from "express";
-import { AuthenticatedRequest } from "./authentication.middleware";
+import type { Response, NextFunction } from "express";
+import type { AuthenticatedRequest } from "./authentication.middleware";
 import { Policies } from "@/constants/policies.constant";
 import { AuthenticationSchemes } from "@/constants/authentication-schemes.constant";
 import { Roles } from "@/constants/roles.constant";
@@ -13,8 +13,6 @@ export interface PolicyConfig {
 
 export class AuthorizationMiddleware {
   private policies: Map<string, PolicyConfig> = new Map();
-
-  constructor() {}
 
   addPolicy(config: PolicyConfig) {
     this.policies.set(config.name, config);

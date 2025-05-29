@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 
 export function createSalt(size: number): string {
   return crypto.randomBytes(size).toString("base64");

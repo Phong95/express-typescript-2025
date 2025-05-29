@@ -1,7 +1,7 @@
-import jwt, { SignOptions } from "jsonwebtoken";
-import { Request } from "express";
 import { env } from "@/common/utils/envConfig";
-import { TokenExtractionStrategy } from "@/middlewares/authentication.middleware";
+import type { TokenExtractionStrategy } from "@/middlewares/authentication.middleware";
+import type { Request } from "express";
+import jwt, { SignOptions } from "jsonwebtoken";
 
 export interface JwtPayload {
   id: string;
@@ -20,19 +20,20 @@ export class JwtService {
   }
 
   static verifyToken(token: string, options?: jwt.VerifyOptions): JwtPayload {
-    return jwt.verify(token, this.getSigningKey(), options) as JwtPayload;
+    return jwt.verify(token, JwtService.getSigningKey(), options) as JwtPayload;
   }
 
   static generateToken(
     payload: Omit<JwtPayload, "exp" | "iat">,
     expiresIn: number
   ): string {
-    return jwt.sign(payload, this.getSigningKey(), { expiresIn });
+    return jwt.sign(payload, JwtService.getSigningKey(), { expiresIn });
   }
 
   // Token extraction strategies
   static extractFromHeader(req: Request): string | null {
     const authHeader = req.headers.authorization;
+    // biome-ignore lint/complexity/useOptionalChain: <explanation>
     if (authHeader && authHeader.startsWith("Bearer ")) {
       return authHeader.substring(7);
     }
@@ -47,7 +48,7 @@ export class JwtService {
 
   static extractFromQuery(
     req: Request,
-    paramName: string = "access_token"
+    paramName = "access_token"
   ): string | null {
     return (req.query[paramName] as string) || null;
   }

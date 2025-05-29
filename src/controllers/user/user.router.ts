@@ -1,5 +1,5 @@
 import { OpenAPIRegistry } from "@asteasolutions/zod-to-openapi";
-import express, { Router } from "express";
+import express, { type Router } from "express";
 import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
@@ -18,7 +18,7 @@ import {
 import { Policies } from "@/constants/policies.constant";
 import {
   allowAnonymous,
-  AuthenticatedRequest,
+  type AuthenticatedRequest,
 } from "@/middlewares/authentication.middleware";
 import type { Request, RequestHandler, Response } from "express";
 import { userRepository } from "@/repositories/user/user.repository";

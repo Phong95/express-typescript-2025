@@ -1,18 +1,14 @@
 import z from "zod";
 
-export class RestfulAPIResponseModel<T = any> {
-  public statusCode: number = 200;
-  public success: boolean = true;
-  public message: string = "";
+export class RestfulAPIResponseModel<T> {
+  public statusCode = 200;
+  public success = true;
+  public message = "";
   public result?: T;
 
   constructor(model: T);
   constructor(success: boolean, statusCode?: number, message?: string);
-  constructor(
-    successOrModel: boolean | T,
-    statusCode: number = 200,
-    message: string = ""
-  ) {
+  constructor(successOrModel: boolean | T, statusCode = 200, message = "") {
     if (typeof successOrModel === "boolean") {
       // Constructor for success/failure
       this.success = successOrModel;

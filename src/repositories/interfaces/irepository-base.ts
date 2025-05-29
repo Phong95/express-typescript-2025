@@ -1,4 +1,4 @@
-import { FilterQuery, IReadRepositoryBase } from "./iread-repository-base";
+import type { FilterQuery, IReadRepositoryBase } from "./iread-repository-base";
 
 /**
  * A IRepositoryBase<T> can be used to query and save instances of T.

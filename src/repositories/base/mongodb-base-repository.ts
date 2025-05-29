@@ -1,21 +1,29 @@
-import { Model, ClientSession, SortOrder } from "mongoose";
-import { IBaseEntity } from "@/models/base/base-identity";
-import { IRepository } from "../interfaces/irepository";
-import { FilterQuery, QueryOptions } from "../interfaces/iread-repository-base";
+import type { IBaseEntity } from "@/models/base/base-identity";
+import {
+  type ClientSession,
+  type Model,
+  type SortOrder,
+  Types,
+} from "mongoose";
+import type {
+  FilterQuery,
+  QueryOptions,
+} from "../interfaces/iread-repository-base";
+import type { IRepository } from "../interfaces/irepository";
 
 export abstract class MongoDBBaseRepository<T extends IBaseEntity>
   implements IRepository<T>
 {
-  protected model: Model<T>;
+  protected collection: Model<T>;
 
   constructor(model: Model<T>) {
-    this.model = model;
+    this.collection = model;
   }
 
   // Create operations
   async postAsync(entity: Omit<T, "_id">): Promise<T | null> {
     try {
-      const newEntity = new this.model(entity);
+      const newEntity = new this.collection(entity);
       const savedEntity = await newEntity.save();
       return this.toPlainObject(savedEntity);
     } catch (error) {
@@ -26,7 +34,10 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
 
   async postsAsync(entities: Omit<T, "_id">[]): Promise<T[] | null> {
     try {
-      const savedEntities = await this.model.insertMany(entities as any);
+      const savedEntities = await this.collection.insertMany(
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        entities as any
+      );
       return savedEntities.map((entity) => this.toPlainObject(entity));
     } catch (error) {
       console.error("Error creating entities:", error);
@@ -41,7 +52,8 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
         throw new Error("Entity must have an _id for update operation");
       }
 
-      const result = await this.model.updateOne(
+      const result = await this.collection.updateOne(
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
         { _id: entity._id } as any,
         { $set: entity },
         { runValidators: true }
@@ -55,8 +67,9 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
   }
 
   async putByIdAsync(id: string, updateData: Partial<T>): Promise<T | null> {
-    const updatedEntity = await this.model.findByIdAndUpdate(
+    const updatedEntity = await this.collection.findByIdAndUpdate(
       id,
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
       updateData as any, // Type assertion
       { new: true, runValidators: true }
     );
@@ -73,7 +86,7 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
         },
       }));
 
-      const result = await this.model.bulkWrite(bulkOps);
+      const result = await this.collection.bulkWrite(bulkOps);
       return result.modifiedCount === entities.length;
     } catch (error) {
       console.error("Error updating entities:", error);
@@ -88,7 +101,10 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
         throw new Error("Entity must have an _id for delete operation");
       }
 
-      const result = await this.model.deleteOne({ _id: entity._id } as any);
+      const result = await this.collection.deleteOne({
+        _id: entity._id,
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      } as any);
       return result.deletedCount > 0;
     } catch (error) {
       console.error("Error deleting entity:", error);
@@ -98,7 +114,7 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
 
   async deleteByIdAsync(id: string): Promise<boolean> {
     try {
-      const result = await this.model.findByIdAndDelete(id);
+      const result = await this.collection.findByIdAndDelete(id);
       return result !== null;
     } catch (error) {
       console.error("Error deleting entity by ID:", error);
@@ -109,7 +125,10 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
   async deletesAsync(entities: T[]): Promise<boolean> {
     try {
       const ids = entities.map((entity) => entity._id).filter((id) => id);
-      const result = await this.model.deleteMany({ _id: { $in: ids } } as any);
+      const result = await this.collection.deleteMany({
+        _id: { $in: ids },
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      } as any);
       return result.deletedCount === ids.length;
     } catch (error) {
       console.error("Error deleting entities:", error);
@@ -119,7 +138,8 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
 
   async deleteByPredicateAsync(predicate: FilterQuery<T>): Promise<number> {
     try {
-      const result = await this.model.deleteMany(predicate as any);
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      const result = await this.collection.deleteMany(predicate as any);
       return result.deletedCount || 0;
     } catch (error) {
       console.error("Error deleting entities by predicate:", error);
@@ -131,7 +151,7 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
   async executeInTransactionAsync(
     action: () => Promise<void>
   ): Promise<boolean> {
-    const session: ClientSession = await this.model.db.startSession();
+    const session: ClientSession = await this.collection.db.startSession();
 
     try {
       await session.withTransaction(async () => {
@@ -152,7 +172,8 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
     includes?: (keyof T)[]
   ): Promise<T | null> {
     try {
-      let query = this.model.findOne(predicate as any);
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      let query = this.collection.findOne(predicate as any);
 
       if (includes && includes.length > 0) {
         query = query.populate(includes.join(" "));
@@ -177,7 +198,8 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
     options?: QueryOptions<T>
   ): Promise<T[]> {
     try {
-      let query = this.model.find((predicate as any) || {});
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      let query = this.collection.find((predicate as any) || {});
 
       if (options) {
         // Handle pagination
@@ -215,9 +237,10 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
   async countAsync(predicate?: FilterQuery<T>): Promise<number> {
     try {
       if (predicate) {
-        return await this.model.countDocuments(predicate as any);
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        return await this.collection.countDocuments(predicate as any);
       }
-      return await this.model.countDocuments();
+      return await this.collection.countDocuments();
     } catch (error) {
       console.error("Error counting entities:", error);
       return 0;
@@ -230,8 +253,9 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
   async anyAsync(predicate?: FilterQuery<T>): Promise<boolean> {
     try {
       const count = predicate
-        ? await this.model.countDocuments(predicate as any).limit(1)
-        : await this.model.countDocuments().limit(1);
+        ? // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+          await this.collection.countDocuments(predicate as any).limit(1)
+        : await this.collection.countDocuments().limit(1);
       return count > 0;
     } catch (error) {
       console.error("Error checking entity existence:", error);
@@ -240,13 +264,15 @@ export abstract class MongoDBBaseRepository<T extends IBaseEntity>
   }
 
   // Helper methods
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   protected toPlainObject(doc: any): T {
-    if (doc && doc.toObject) {
+    if (doc?.toObject) {
       return doc.toObject();
     }
     return doc;
   }
 
+  // biome-ignore lint/suspicious/noExplicitAny: <explanation>
   protected validateEntity(entity: any): void {
     if (!entity) {
       throw new Error("Entity cannot be null or undefined");

@@ -3,9 +3,9 @@ import {
   CreateUserSchema,
   RegisterUserSchema,
 } from "@/models/user/user.schema";
-import express, { Router } from "express";
+import express, { type Router } from "express";
 import type { Request, Response } from "express";
-import { IUser, IUserRegister } from "@/models/user/user.model";
+import type { IUser, IUserRegister } from "@/models/user/user.model";
 import { APIResponseHelper } from "@/helper/api-response.helper";
 import { userRepository } from "@/repositories/user/user.repository";
 import { createSalt, hashPassword } from "@/common/utils/string";

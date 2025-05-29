@@ -1,5 +1,5 @@
 import { APIResponseHelper } from "@/helper/api-response.helper";
-import { RestfulAPIResponseModel } from "@/models/base/restful-api-response.model";
+import type { RestfulAPIResponseModel } from "@/models/base/restful-api-response.model";
 import type { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import type { ZodError, ZodSchema } from "zod";
@@ -39,11 +39,3 @@ export const validateRequest =
       return;
     }
   };
-
-// Handle service response and send HTTP response
-export const handleServiceResponse = (
-  serviceResponse: RestfulAPIResponseModel<any>,
-  response: Response
-) => {
-  return response.status(serviceResponse.statusCode).json(serviceResponse);
-};

@@ -1,5 +1,5 @@
 import { model, Schema } from "mongoose";
-import { IBaseEntity } from "../base/base-identity";
+import type { IBaseEntity } from "../base/base-identity";
 
 export interface IUser extends IBaseEntity {
   name: string;

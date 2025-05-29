@@ -1,11 +1,13 @@
-import { Request, Response, NextFunction } from "express";
-import { JwtPayload, JwtService } from "@/services/jwt.service";
 import { AuthenticationSchemes } from "@/constants/authentication-schemes.constant";
+import { type JwtPayload, JwtService } from "@/services/jwt.service";
 import { logger } from "@/services/logger.service";
+import type { NextFunction, Request, Response } from "express";
+import type { VerifyOptions } from "jsonwebtoken";
 
 export interface AuthenticatedRequest extends Request {
   user?: JwtPayload;
   authScheme?: string;
+  skipAuth?: boolean;
 }
 
 export type TokenExtractionStrategy = (req: Request) => string | null;
@@ -61,7 +63,7 @@ export class AuthenticationMiddleware {
           if (!token) continue;
 
           try {
-            const verifyOptions: any = {};
+            const verifyOptions: VerifyOptions = {};
 
             if (schemeConfig.validateIssuer && schemeConfig.validIssuers) {
               verifyOptions.issuer = schemeConfig.validIssuers;
@@ -99,7 +101,7 @@ export class AuthenticationMiddleware {
 
   optionalAuthenticate(schemeName?: string) {
     return async (
-      req: any,
+      req: AuthenticatedRequest,
       res: Response,
       next: NextFunction
     ): Promise<void> => {
@@ -128,7 +130,7 @@ export class AuthenticationMiddleware {
           }
 
           try {
-            const verifyOptions: any = {};
+            const verifyOptions: VerifyOptions = {};
 
             if (schemeConfig.validateIssuer && schemeConfig.validIssuers) {
               verifyOptions.issuer = schemeConfig.validIssuers;
@@ -199,7 +201,11 @@ export class AuthenticationMiddleware {
   }
 }
 
-export const allowAnonymous = (req: any, res: Response, next: NextFunction) => {
+export const allowAnonymous = (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+) => {
   req.skipAuth = true;
   next();
 };

@@ -4,9 +4,13 @@ import {
   LoginUserSchema,
   RegisterUserSchema,
 } from "@/models/user/user.schema";
-import express, { Router } from "express";
+import express, { type Router } from "express";
 import type { Request, Response } from "express";
-import { IUser, IUserLogin, IUserRegister } from "@/models/user/user.model";
+import {
+  type IUser,
+  type IUserLogin,
+  IUserRegister,
+} from "@/models/user/user.model";
 import { APIResponseHelper } from "@/helper/api-response.helper";
 import { userRepository } from "@/repositories/user/user.repository";
 import { createSalt, hashPassword } from "@/common/utils/string";
@@ -35,14 +39,14 @@ authenticateRouter.post(
 
       const payload = {
         email: findedUser.email,
-        id: findedUser._id!,
+        id: findedUser._id || "",
         role: findedUser.role,
         iss: env.JWT_ISSUER,
         aud: env.JWT_AUDIENCE,
       };
       const refresh_payload = {
         email: findedUser.email,
-        id: findedUser._id!,
+        id: findedUser._id || "",
         role: findedUser.role,
         iss: env.JWT_ISSUER,
         aud: env.JWT_RT_AUDIENCE,
@@ -75,21 +79,21 @@ authenticateRouter.post(
 
       const hashedPassword = hashPassword(findedUser.salt, loginModel.password);
 
-      if (hashedPassword != findedUser.password) {
+      if (hashedPassword !== findedUser.password) {
         APIResponseHelper.notFoundResult(res);
         return;
       }
 
       const payload = {
         email: findedUser.email,
-        id: findedUser._id!,
+        id: findedUser._id || "",
         role: findedUser.role,
         iss: env.JWT_ISSUER,
         aud: env.JWT_AUDIENCE,
       };
       const refresh_payload = {
         email: findedUser.email,
-        id: findedUser._id!,
+        id: findedUser._id || "",
         role: findedUser.role,
         iss: env.JWT_ISSUER,
         aud: env.JWT_RT_AUDIENCE,

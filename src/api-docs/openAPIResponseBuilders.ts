@@ -28,10 +28,10 @@ export function createApiResponses(
   }>
 ) {
   return responses.reduce((acc, { schema, description, statusCode }) => {
-    return {
-      ...acc,
-      ...createApiResponse(schema, description, statusCode),
-    };
+    return Object.assign(
+      acc,
+      createApiResponse(schema, description, statusCode)
+    );
   }, {});
 }
 

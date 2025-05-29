@@ -1,5 +1,5 @@
 // Base types and utilities for MongoDB operations
-export type FilterQuery<T> = Partial<T> | { [key: string]: any };
+export type FilterQuery<T> = Partial<T>;
 export type SortQuery<T> = { [K in keyof T]?: 1 | -1 } | string;
 export type ProjectionFields<T> = { [K in keyof T]?: 1 | 0 } | string[];
 

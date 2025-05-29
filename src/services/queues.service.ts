@@ -1,6 +1,6 @@
 // types/TaskQueue.ts
 import { env } from "@/common/utils/envConfig";
-import { JobsOptions, QueueOptions } from "bullmq";
+import type { JobsOptions, QueueOptions } from "bullmq";
 
 export interface RedisConfig {
   host: string;
@@ -19,16 +19,18 @@ export interface TaskContext {
   requestId?: string;
   userId?: string;
   operation?: string;
-  [key: string]: any;
+  [key: string]: string | number | boolean | undefined;
 }
 
 export interface TaskData {
-  [key: string]: any;
+  [key: string]: string | number | boolean | object | undefined;
 }
 
-export interface TaskHandler<TData = TaskData, TResult = any> {
-  (taskData: TData, context: TaskContext, job: Job): Promise<TResult>;
-}
+export type TaskHandler<TData = TaskData, TResult = unknown> = (
+  taskData: TData,
+  context: TaskContext,
+  job: Job
+) => Promise<TResult>;
 
 export interface EnqueueOptions extends Omit<JobsOptions, "jobId"> {
   delay?: number;
@@ -42,17 +44,17 @@ export interface EnqueueResult {
   enqueuedAt: string;
 }
 
-export interface JobStatus {
+export interface JobStatus<TData = TaskData, TResult = unknown> {
   id: string;
   taskName: string;
   state: string;
-  progress: number | object;
+  progress: number | Record<string, unknown>;
   data: {
     taskName: string;
-    taskData: TaskData;
+    taskData: TData;
     context: TaskContext;
   };
-  result: any;
+  result: TResult | null;
   error: string | null;
   createdAt: Date;
   processedAt: Date | null;
@@ -69,15 +71,21 @@ export interface QueueStats {
 }
 
 // services/TaskQueueService.ts
-import { Queue, Worker, Job, JobProgress } from "bullmq";
-import Redis from "ioredis";
+import { type Job, type JobProgress, Queue, Worker } from "bullmq";
+import type Redis from "ioredis";
 import { redisClient } from "./redis-client.service";
+
+interface JobData<TData = TaskData> {
+  taskName: string;
+  taskData: TData;
+  context: TaskContext;
+}
 
 class TaskQueueService {
   private redisConfig: Redis;
   private queues: Map<string, Queue>;
   private workers: Map<string, Worker>;
-  private taskHandlers: Map<string, TaskHandler>;
+  private taskHandlers: Map<string, TaskHandler<TaskData, unknown>>;
   private defaultQueue: Queue;
 
   constructor(redisConfig: Redis) {
@@ -108,12 +116,9 @@ class TaskQueueService {
   private initializeDefaultWorker(): void {
     const worker = new Worker(
       "general-tasks",
-      async (job: Job) => {
-        const { taskName, taskData, context } = job.data as {
-          taskName: string;
-          taskData: TaskData;
-          context: TaskContext;
-        };
+      async (job: Job): Promise<unknown> => {
+        const jobData = job.data as JobData;
+        const { taskName, taskData, context } = jobData;
 
         console.log(`🔄 Processing task: ${taskName} (Job ID: ${job.id})`);
 
@@ -136,20 +141,27 @@ class TaskQueueService {
     );
 
     // Event listeners
-    worker.on("completed", (job: Job, result: any) => {
-      console.log(`✅ Job ${job.id} (${job.data.taskName}) completed:`, result);
+    worker.on("completed", (job: Job, result: unknown) => {
+      const jobData = job.data as JobData;
+      console.log(`✅ Job ${job.id} (${jobData.taskName}) completed:`, result);
     });
 
     worker.on("failed", (job: Job | undefined, err: Error) => {
-      console.log(
-        `❌ Job ${job?.id} (${job?.data?.taskName}) failed:`,
-        err.message
-      );
+      if (job?.data) {
+        const jobData = job.data as JobData;
+        console.log(
+          `❌ Job ${job.id} (${jobData.taskName}) failed:`,
+          err.message
+        );
+      } else {
+        console.log("❌ Job failed:", err.message);
+      }
     });
 
     worker.on("progress", (job: Job, progress: JobProgress) => {
+      const jobData = job.data as JobData;
       console.log(
-        `📊 Job ${job.id} (${job.data.taskName}) progress: ${progress}%`
+        `📊 Job ${job.id} (${jobData.taskName}) progress: ${progress}%`
       );
     });
 
@@ -157,23 +169,27 @@ class TaskQueueService {
   }
 
   // Register a task handler (similar to defining what the task should do)
-  public registerTask<TData = TaskData, TResult = any>(
+  public registerTask<TData extends TaskData = TaskData, TResult = unknown>(
     taskName: string,
     handlerFunction: TaskHandler<TData, TResult>
   ): void {
-    this.taskHandlers.set(taskName, handlerFunction as TaskHandler);
+    // Type assertion is needed here due to map constraint, but it's safe
+    this.taskHandlers.set(
+      taskName,
+      handlerFunction as TaskHandler<TaskData, unknown>
+    );
     console.log(`📝 Task handler registered: ${taskName}`);
   }
 
   // Enqueue a task (equivalent to _taskQueue.EnqueueTask)
-  public async enqueueTask<TData = TaskData>(
+  public async enqueueTask<TData extends TaskData = TaskData>(
     taskName: string,
     taskData: TData = {} as TData,
     options: EnqueueOptions = {},
     context: Partial<TaskContext> = {}
   ): Promise<EnqueueResult> {
     try {
-      const jobData = {
+      const jobData: JobData<TData> = {
         taskName,
         taskData,
         context: {
@@ -202,20 +218,25 @@ class TaskQueueService {
   }
 
   // Get job status
-  public async getJobStatus(jobId: string): Promise<JobStatus | null> {
+  public async getJobStatus<
+    TData extends TaskData = TaskData,
+    TResult = unknown
+  >(jobId: string): Promise<JobStatus<TData, TResult> | null> {
     const job = await this.defaultQueue.getJob(jobId);
     if (!job) {
       return null;
     }
 
     const state = await job.getState();
+    const jobData = job.data as JobData<TData>;
+
     return {
       id: job.id!,
-      taskName: job.data.taskName,
+      taskName: jobData.taskName,
       state,
       progress: job.progress,
-      data: job.data,
-      result: job.returnvalue,
+      data: jobData,
+      result: job.returnvalue as TResult | null,
       error: job.failedReason || null,
       createdAt: new Date(job.timestamp),
       processedAt: job.processedOn ? new Date(job.processedOn) : null,
@@ -242,9 +263,7 @@ class TaskQueueService {
   }
 
   // Get queue statistics
-  public async getQueueStats(
-    queueName: string = "general-tasks"
-  ): Promise<QueueStats> {
+  public async getQueueStats(queueName = "general-tasks"): Promise<QueueStats> {
     const queue = this.queues.get(queueName);
     if (!queue) {
       throw new Error(`Queue ${queueName} not found`);

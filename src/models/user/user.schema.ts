@@ -194,13 +194,13 @@ export const GetUsersQuerySchema = z.object({
   query: z.object({
     page: z
       .string()
-      .transform((val) => parseInt(val))
+      .transform((val) => Number.parseInt(val))
       .pipe(z.number().int().min(1))
       .optional()
       .default("1"),
     limit: z
       .string()
-      .transform((val) => parseInt(val))
+      .transform((val) => Number.parseInt(val))
       .pipe(z.number().int().min(1).max(100))
       .optional()
       .default("10"),
