@@ -3,10 +3,9 @@ import express, { type Router } from "express";
 import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
-import { validateRequest } from "@/common/utils/httpHandlers";
 import { AuthenticationSchemes } from "@/constants/authentication-schemes.constant";
 import { Policies } from "@/constants/policies.constant";
-import { APIResponseHelper } from "@/helper/api-response.helper";
+import { APIResponseHelper } from "@/helpers/api-response.helper";
 import {
   type AuthenticatedRequest,
   allowAnonymous,
@@ -22,6 +21,7 @@ import {
   optionalAuthenticate,
   requirePolicy,
 } from "@/services/auth.service";
+import { validateRequest } from "@/utils/http-handlers.util";
 import type { Request, RequestHandler, Response } from "express";
 import { userController } from "./user.controller";
 

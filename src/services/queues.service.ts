@@ -1,5 +1,5 @@
 // types/TaskQueue.ts
-import { env } from "@/common/utils/envConfig";
+import { env } from "@/utils/env-config.util";
 import type { JobsOptions, QueueOptions } from "bullmq";
 
 export interface RedisConfig {

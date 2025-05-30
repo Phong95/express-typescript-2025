@@ -3,7 +3,7 @@ import express, { type Request, type Response, type Router } from "express";
 import { z } from "zod";
 
 import { createApiResponse } from "@/api-docs/openAPIResponseBuilders";
-import { APIResponseHelper } from "@/helper/api-response.helper";
+import { APIResponseHelper } from "@/helpers/api-response.helper";
 
 export const healthCheckRegistry = new OpenAPIRegistry();
 export const healthCheckRouter: Router = express.Router();

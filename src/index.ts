@@ -1,14 +1,14 @@
-import { env } from "@/common/utils/envConfig";
 import { app } from "@/server";
-import { MongoDBConnection } from "./common/database/mongodb";
+import { env } from "@/utils/env-config.util";
 import chalk from "chalk";
-import { logger } from "./services/logger.service";
 import { cronJobService } from "./services/cron-jobs.service";
+import { logger } from "./services/logger.service";
+import { MongoDBService } from "./services/mongodb.service";
 
 const startServer = async () => {
   try {
     // Connect to database first
-    const db = MongoDBConnection.getInstance();
+    const db = MongoDBService.getInstance();
     await db.connect();
     logger.info(chalk.cyan("Database connected successfully"));
 

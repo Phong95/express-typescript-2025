@@ -1,5 +1,5 @@
-import { env } from "@/common/utils/envConfig";
 import type { TokenExtractionStrategy } from "@/middlewares/authentication.middleware";
+import { env } from "@/utils/env-config.util";
 import type { Request } from "express";
 import jwt, { SignOptions } from "jsonwebtoken";
 

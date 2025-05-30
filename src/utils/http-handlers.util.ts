@@ -1,4 +1,4 @@
-import { APIResponseHelper } from "@/helper/api-response.helper";
+import { APIResponseHelper } from "@/helpers/api-response.helper";
 import type { RestfulAPIResponseModel } from "@/models/base/restful-api-response.model";
 import type { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";

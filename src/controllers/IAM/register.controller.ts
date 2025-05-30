@@ -1,15 +1,15 @@
-import { validateRequest } from "@/common/utils/httpHandlers";
+import { Roles } from "@/constants/roles.constant";
+import { APIResponseHelper } from "@/helpers/api-response.helper";
+import type { IUser, IUserRegister } from "@/models/user/user.model";
 import {
   CreateUserSchema,
   RegisterUserSchema,
 } from "@/models/user/user.schema";
+import { userRepository } from "@/repositories/user/user.repository";
+import { validateRequest } from "@/utils/http-handlers.util";
+import { createSalt, hashPassword } from "@/utils/string.util";
 import express, { type Router } from "express";
 import type { Request, Response } from "express";
-import type { IUser, IUserRegister } from "@/models/user/user.model";
-import { APIResponseHelper } from "@/helper/api-response.helper";
-import { userRepository } from "@/repositories/user/user.repository";
-import { createSalt, hashPassword } from "@/common/utils/string";
-import { Roles } from "@/constants/roles.constant";
 
 export const registerRouter: Router = express.Router();
 

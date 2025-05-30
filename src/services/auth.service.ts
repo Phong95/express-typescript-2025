@@ -1,10 +1,10 @@
 import { AuthenticationSchemes } from "@/constants/authentication-schemes.constant";
-import { AuthenticationMiddleware } from "@/middlewares/authentication.middleware";
-import { AuthorizationMiddleware } from "@/middlewares/authorization.middleware";
-import { JwtService } from "./jwt.service";
-import { env } from "@/common/utils/envConfig";
 import { Policies } from "@/constants/policies.constant";
 import { Roles } from "@/constants/roles.constant";
+import { AuthenticationMiddleware } from "@/middlewares/authentication.middleware";
+import { AuthorizationMiddleware } from "@/middlewares/authorization.middleware";
+import { env } from "@/utils/env-config.util";
+import { JwtService } from "./jwt.service";
 
 // auth/index.ts - Main export
 export const authMiddleware = new AuthenticationMiddleware();

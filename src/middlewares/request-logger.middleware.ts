@@ -3,8 +3,8 @@ import type { NextFunction, Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import pinoHttp from "pino-http";
 
-import { env } from "@/common/utils/envConfig";
 import { logger } from "@/services/logger.service";
+import { env } from "@/utils/env-config.util";
 
 const getLogLevel = (status: number) => {
   if (status >= StatusCodes.INTERNAL_SERVER_ERROR) return "error";

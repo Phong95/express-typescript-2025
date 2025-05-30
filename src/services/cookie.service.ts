@@ -1,5 +1,5 @@
-import { env } from "@/common/utils/envConfig";
-import type { Response, Request } from "express";
+import { env } from "@/utils/env-config.util";
+import type { Request, Response } from "express";
 
 export class CookieService {
   static setCookie(

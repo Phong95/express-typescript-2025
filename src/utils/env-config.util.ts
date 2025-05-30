@@ -1,3 +1,4 @@
+import { S3Provider } from "@/models/s3/s3.model";
 import dotenv from "dotenv";
 import { z } from "zod";
 
@@ -35,6 +36,22 @@ const envSchema = z.object({
 
   TOKEN_EXPIRES: z.coerce.number().int().positive().default(3600),
   REFRESH_TOKEN_EXPIRES: z.coerce.number().int().positive().default(1296000),
+
+  EMAIL_HOST: z.string().min(1),
+  EMAIL_PORT: z.coerce.number().int().positive().default(587),
+  EMAIL_SECURE: z.string().transform((val) => val === "true"),
+  EMAIL_USER: z.string().min(1),
+  EMAIL_PASS: z.string().min(1),
+  EMAIL_FROM: z.string().min(1),
+
+  S3_PROVIDER: z.nativeEnum(S3Provider),
+  S3_ACCESS_KEY: z.string().min(1),
+  S3_SECRET_KEY: z.string().min(1),
+  S3_ENDPOINT: z.string().min(1),
+  S3_DEFAULT_BUCKET_NAME: z.string().min(1),
+  S3_PUBLIC_BUCKET_NAME: z.string().min(1),
+  S3_TEMP_BUCKET_NAME: z.string().min(1),
+  S3_PRESIGNED_DURATION: z.coerce.number().int().positive().default(900),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

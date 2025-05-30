@@ -1,15 +1,16 @@
 import { openAPIRouter } from "@/api-docs/openAPIRouter";
-import { env } from "@/common/utils/envConfig";
 import { healthCheckRouter } from "@/controllers/healthCheck/healthCheckRouter";
 import { userRouter } from "@/controllers/user/user.router";
 import errorHandler from "@/middlewares/error-handler.middleware";
 import rateLimiter from "@/middlewares/rate-limiter.middleware";
 import requestLogger from "@/middlewares/request-logger.middleware";
+import { env } from "@/utils/env-config.util";
 import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
 import { authenticateRouter } from "./controllers/IAM/authenticate.controller";
 import { registerRouter } from "./controllers/IAM/register.controller";
+import { testRouter } from "./controllers/test/test.controller";
 
 const app: Express = express();
 
@@ -31,12 +32,27 @@ app.use("/api/v1/health-check", healthCheckRouter);
 app.use("/api/v1/users", userRouter);
 app.use("/api/v1/register", registerRouter);
 app.use("/api/v1/authenticate", authenticateRouter);
+app.use("/api/v1/test", testRouter);
 
 // Swagger UI
 app.use(openAPIRouter);
 
+// 404 Handler for API routes only - more specific catch
+app.use("/api", (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "API endpoint not found",
+    path: req.originalUrl,
+  });
+});
+
+// Catch-all 404 handler - must be LAST
 app.use((req, res) => {
-  res.status(404).json({ message: "Invalid endpoint" });
+  res.status(404).json({
+    success: false,
+    message: "Invalid endpoint",
+    path: req.originalUrl,
+  });
 });
 
 // Error handlers

@@ -1,9 +1,9 @@
 import type { Request, RequestHandler, Response } from "express";
 
+import { APIResponseHelper } from "@/helpers/api-response.helper";
 import { userRepository } from "@/repositories/user/user.repository";
-import { APIResponseHelper } from "@/helper/api-response.helper";
-import { taskQueueService } from "@/services/queues.service";
 import { logger } from "@/services/logger.service";
+import { taskQueueService } from "@/services/queues.service";
 
 class UserController {
   public createUser = async (req: Request, res: Response) => {

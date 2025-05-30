@@ -1,4 +1,4 @@
-import { env } from "@/common/utils/envConfig";
+import { env } from "@/utils/env-config.util";
 import pino from "pino";
 
 export const logger = pino({

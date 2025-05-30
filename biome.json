@@ -24,7 +24,7 @@
 		"rules": {
 			"recommended": true,
 			"style": {
-				"noNonNullAssertion": "warn",
+				"noNonNullAssertion": "off",
 				"useImportType": "off"
 			},
 			"complexity": {

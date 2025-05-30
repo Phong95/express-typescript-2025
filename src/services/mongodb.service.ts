@@ -1,17 +1,17 @@
-import mongoose from "mongoose";
-import { env } from "../utils/envConfig";
 import { logger } from "@/services/logger.service";
+import mongoose from "mongoose";
+import { env } from "../utils/env-config.util";
 
-export class MongoDBConnection {
-  private static instance: MongoDBConnection;
+export class MongoDBService {
+  private static instance: MongoDBService;
 
   private constructor() {}
 
-  public static getInstance(): MongoDBConnection {
-    if (!MongoDBConnection.instance) {
-      MongoDBConnection.instance = new MongoDBConnection();
+  public static getInstance(): MongoDBService {
+    if (!MongoDBService.instance) {
+      MongoDBService.instance = new MongoDBService();
     }
-    return MongoDBConnection.instance;
+    return MongoDBService.instance;
   }
 
   public async connect(): Promise<void> {

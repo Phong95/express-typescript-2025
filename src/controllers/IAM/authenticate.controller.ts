@@ -1,22 +1,22 @@
-import { validateRequest } from "@/common/utils/httpHandlers";
-import {
-  CreateUserSchema,
-  LoginUserSchema,
-  RegisterUserSchema,
-} from "@/models/user/user.schema";
-import express, { type Router } from "express";
-import type { Request, Response } from "express";
+import { APIResponseHelper } from "@/helpers/api-response.helper";
 import {
   type IUser,
   type IUserLogin,
   IUserRegister,
 } from "@/models/user/user.model";
-import { APIResponseHelper } from "@/helper/api-response.helper";
+import {
+  CreateUserSchema,
+  LoginUserSchema,
+  RegisterUserSchema,
+} from "@/models/user/user.schema";
 import { userRepository } from "@/repositories/user/user.repository";
-import { createSalt, hashPassword } from "@/common/utils/string";
-import { JwtService } from "@/services/jwt.service";
-import { env } from "@/common/utils/envConfig";
 import { CookieService } from "@/services/cookie.service";
+import { JwtService } from "@/services/jwt.service";
+import { env } from "@/utils/env-config.util";
+import { validateRequest } from "@/utils/http-handlers.util";
+import { createSalt, hashPassword } from "@/utils/string.util";
+import express, { type Router } from "express";
+import type { Request, Response } from "express";
 
 export const authenticateRouter: Router = express.Router();
 

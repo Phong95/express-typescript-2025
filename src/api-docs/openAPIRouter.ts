@@ -11,4 +11,18 @@ openAPIRouter.get("/swagger.json", (_req: Request, res: Response) => {
   res.send(openAPIDocument);
 });
 
-openAPIRouter.use("/", swaggerUi.serve, swaggerUi.setup(openAPIDocument));
+// Serve Swagger UI at /docs instead of root "/"
+openAPIRouter.use(
+  "/docs",
+  swaggerUi.serve,
+  swaggerUi.setup(openAPIDocument, {
+    explorer: true,
+    customCss: ".swagger-ui .topbar { display: none }",
+    customSiteTitle: "API Documentation",
+  })
+);
+
+// Optional: Redirect root swagger path to /docs
+openAPIRouter.get("/", (_req: Request, res: Response) => {
+  res.redirect("/docs");
+});
