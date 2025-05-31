@@ -1,4 +1,4 @@
-import { model, Schema } from "mongoose";
+import { Schema, model } from "mongoose";
 import type { IBaseEntity } from "../base/base-identity";
 
 export interface IUser extends IBaseEntity {
@@ -11,7 +11,24 @@ export interface IUser extends IBaseEntity {
   isActivate?: boolean;
   avatarUrl?: string;
   isLocked?: boolean;
+  refreshTokens: IToken[];
 }
+
+export interface IToken {
+  token: string;
+  expiredAt: Date;
+}
+
+// Token subdocument schema
+const tokenSchema = new Schema<IToken>(
+  {
+    token: { type: String, required: true },
+    expiredAt: { type: Date, required: true },
+  },
+  {
+    _id: false, // Disable _id for subdocuments to keep it simple
+  }
+);
 
 const userSchema = new Schema<IUser>(
   {
@@ -24,11 +41,25 @@ const userSchema = new Schema<IUser>(
     isActivate: { type: Boolean, default: true },
     avatarUrl: { type: String, required: false },
     isLocked: { type: Boolean, default: false },
+    refreshTokens: {
+      type: [tokenSchema],
+      default: [],
+      validate: {
+        validator: (tokens: IToken[]) => {
+          // Limit to maximum 5 refresh tokens per user
+          return tokens.length <= 5;
+        },
+        message: "User cannot have more than 5 active refresh tokens",
+      },
+    },
   },
   {
     timestamps: true, // This adds createdAt and updatedAt automatically
   }
 );
+
+// Indexes for better performance
+userSchema.index({ email: 1 });
 
 export interface IUserRegister {
   name: string;

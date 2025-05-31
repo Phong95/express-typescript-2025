@@ -1,8 +1,11 @@
-import type { Response, NextFunction } from "express";
-import type { AuthenticatedRequest } from "./authentication.middleware";
-import { Policies } from "@/constants/policies.constant";
 import { AuthenticationSchemes } from "@/constants/authentication-schemes.constant";
+import { Policies } from "@/constants/policies.constant";
 import { Roles } from "@/constants/roles.constant";
+import type { NextFunction, Response } from "express";
+import type {
+  AuthenticatedRequest,
+  AuthenticationMiddleware,
+} from "./authentication.middleware";
 
 export interface PolicyConfig {
   name: string;
@@ -13,34 +16,76 @@ export interface PolicyConfig {
 
 export class AuthorizationMiddleware {
   private policies: Map<string, PolicyConfig> = new Map();
+  private authMiddleware: AuthenticationMiddleware;
 
+  constructor(authMiddleware: AuthenticationMiddleware) {
+    this.authMiddleware = authMiddleware;
+  }
   addPolicy(config: PolicyConfig) {
     this.policies.set(config.name, config);
   }
 
   requirePolicy(policyName: string) {
-    return (
+    return async (
       req: AuthenticatedRequest,
       res: Response,
       next: NextFunction
-    ): void => {
-      // ✅ Add void return type
+    ): Promise<void> => {
       const policy = this.policies.get(policyName);
       if (!policy) {
         res.status(500).json({
           success: false,
           message: "Invalid authorization policy",
         });
-        return; // ✅ Explicit return void is OK here
+        return;
       }
 
-      // Check if user is authenticated
+      // Auto-authenticate using the policy's schemes
+      if (!req.user && policy.schemes.length > 0) {
+        let authenticated = false;
+
+        // Try each scheme in the policy
+        for (const scheme of policy.schemes) {
+          try {
+            // Create a promise-based wrapper for the authentication middleware
+            await new Promise<void>((resolve, reject) => {
+              const authMiddleware = this.authMiddleware.authenticate(scheme);
+              authMiddleware(req, res, (error) => {
+                if (error) {
+                  reject(error);
+                } else if (req.user) {
+                  authenticated = true;
+                  resolve();
+                } else {
+                  reject(new Error("Authentication failed"));
+                }
+              });
+            });
+
+            if (authenticated) break;
+          } catch (error) {
+            // Continue to next scheme if this one fails
+            continue;
+          }
+        }
+
+        // If no scheme worked, return authentication error
+        if (!authenticated) {
+          res.status(401).json({
+            success: false,
+            message: "Authentication required",
+          });
+          return;
+        }
+      }
+
+      // Check if user is authenticated (after auto-authentication attempt)
       if (!req.user) {
         res.status(401).json({
           success: false,
           message: "Authentication required",
         });
-        return; // ✅ Explicit return void is OK here
+        return;
       }
 
       // Check authentication scheme
@@ -52,7 +97,7 @@ export class AuthorizationMiddleware {
           success: false,
           message: "Invalid authentication scheme",
         });
-        return; // ✅ Explicit return void is OK here
+        return;
       }
 
       // Check roles
@@ -62,7 +107,7 @@ export class AuthorizationMiddleware {
             success: false,
             message: "Insufficient permissions",
           });
-          return; // ✅ Explicit return void is OK here
+          return;
         }
       }
 
@@ -72,10 +117,10 @@ export class AuthorizationMiddleware {
           success: false,
           message: "Authorization failed",
         });
-        return; // ✅ Explicit return void is OK here
+        return;
       }
 
-      next(); // ✅ No return statement with next()
+      next();
     };
   }
 

@@ -5,6 +5,7 @@ import errorHandler from "@/middlewares/error-handler.middleware";
 import rateLimiter from "@/middlewares/rate-limiter.middleware";
 import requestLogger from "@/middlewares/request-logger.middleware";
 import { env } from "@/utils/env-config.util";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import express, { type Express } from "express";
 import helmet from "helmet";
@@ -20,6 +21,7 @@ app.set("trust proxy", true);
 // Middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(cors({ origin: env.CORS_ORIGIN, credentials: true }));
 app.use(helmet());
 app.use(rateLimiter);

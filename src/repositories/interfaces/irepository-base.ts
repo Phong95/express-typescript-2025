@@ -10,14 +10,14 @@ export interface IRepositoryBase<T> extends IReadRepositoryBase<T> {
    * @param entity - The entity to add
    * @returns Promise resolving to the created entity or null if failed
    */
-  postAsync(entity: Omit<T, "_id">): Promise<T | null>;
+  postAsync(entity: T): Promise<T | null>;
 
   /**
    * Adds multiple entities to the database
    * @param entities - The entities to add
    * @returns Promise resolving to the created entities or null if failed
    */
-  postsAsync(entities: Omit<T, "_id">[]): Promise<T[] | null>;
+  postsAsync(entities: T[]): Promise<T[] | null>;
 
   /**
    * Updates an entity in the database

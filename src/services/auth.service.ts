@@ -53,7 +53,7 @@ authMiddleware.addScheme({
   validAudiences: [env.JWT_RT_AUDIENCE],
 });
 
-export const authzMiddleware = new AuthorizationMiddleware();
+export const authzMiddleware = new AuthorizationMiddleware(authMiddleware);
 
 authzMiddleware.addPolicy({
   name: Policies.Bearer,

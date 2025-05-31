@@ -35,6 +35,7 @@ registerRouter.post(
       salt: salt,
       password: hashPassword(salt, registerModel.password),
       role: Roles.User,
+      refreshTokens: [],
     };
     await userRepository.postAsync(newUser);
     APIResponseHelper.createdResult(res, { email: newUser.email });

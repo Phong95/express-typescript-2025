@@ -56,11 +56,15 @@ export class AuthenticationMiddleware {
           : [AuthenticationSchemes.Default];
 
         for (const scheme of schemesToTry) {
+          logger.info(`Scheme ${scheme} was challenged`);
           const schemeConfig = this.schemes.get(scheme);
           if (!schemeConfig) continue;
 
           const token = schemeConfig.extractToken(req);
-          if (!token) continue;
+          if (!token) {
+            logger.error("Invalid token");
+            continue;
+          }
 
           try {
             const verifyOptions: VerifyOptions = {};
@@ -119,7 +123,6 @@ export class AuthenticationMiddleware {
           : [AuthenticationSchemes.Default];
         logger.info(schemesToTry);
         for (const scheme of schemesToTry) {
-          console.log(this.schemes);
           const schemeConfig = this.schemes.get(scheme);
           if (!schemeConfig) continue;
 

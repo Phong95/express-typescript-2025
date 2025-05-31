@@ -1,4 +1,7 @@
+import { AuthenticationSchemes } from "@/constants/authentication-schemes.constant";
+import { Policies } from "@/constants/policies.constant";
 import { APIResponseHelper } from "@/helpers/api-response.helper";
+import { AuthenticatedRequest } from "@/middlewares/authentication.middleware";
 import {
   type IUser,
   type IUserLogin,
@@ -10,6 +13,7 @@ import {
   RegisterUserSchema,
 } from "@/models/user/user.schema";
 import { userRepository } from "@/repositories/user/user.repository";
+import { authenticate, requirePolicy } from "@/services/auth.service";
 import { CookieService } from "@/services/cookie.service";
 import { JwtService } from "@/services/jwt.service";
 import { env } from "@/utils/env-config.util";
@@ -39,14 +43,14 @@ authenticateRouter.post(
 
       const payload = {
         email: findedUser.email,
-        id: findedUser._id || "",
+        id: findedUser.id || "",
         role: findedUser.role,
         iss: env.JWT_ISSUER,
         aud: env.JWT_AUDIENCE,
       };
       const refresh_payload = {
         email: findedUser.email,
-        id: findedUser._id || "",
+        id: findedUser.id || "",
         role: findedUser.role,
         iss: env.JWT_ISSUER,
         aud: env.JWT_RT_AUDIENCE,
@@ -86,14 +90,14 @@ authenticateRouter.post(
 
       const payload = {
         email: findedUser.email,
-        id: findedUser._id || "",
+        id: findedUser.id || "",
         role: findedUser.role,
         iss: env.JWT_ISSUER,
         aud: env.JWT_AUDIENCE,
       };
       const refresh_payload = {
         email: findedUser.email,
-        id: findedUser._id || "",
+        id: findedUser.id || "",
         role: findedUser.role,
         iss: env.JWT_ISSUER,
         aud: env.JWT_RT_AUDIENCE,
@@ -114,5 +118,24 @@ authenticateRouter.post(
       );
       APIResponseHelper.okResult(res, "");
     }
+  }
+);
+
+authenticateRouter.get(
+  "/exchange-token",
+  requirePolicy(Policies.CookieRefreshUser),
+  async (req: AuthenticatedRequest, res: Response) => {
+    console.log(req.query.id);
+    const findedUser = await userRepository.getAsync({
+      id: req.query.id as string,
+    });
+    console.log(findedUser);
+    if (findedUser) {
+      const result = await userRepository.deleteAsync(findedUser);
+      APIResponseHelper.okResult(res, result);
+      return;
+    }
+
+    APIResponseHelper.failedResult(res);
   }
 );
