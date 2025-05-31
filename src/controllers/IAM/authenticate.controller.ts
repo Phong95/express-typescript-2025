@@ -2,6 +2,7 @@ import { AuthenticationSchemes } from "@/constants/authentication-schemes.consta
 import { Policies } from "@/constants/policies.constant";
 import { APIResponseHelper } from "@/helpers/api-response.helper";
 import { AuthenticatedRequest } from "@/middlewares/authentication.middleware";
+import { IUserSession } from "@/models/user-session/user-session.model";
 import {
   type IUser,
   type IUserLogin,
@@ -12,11 +13,16 @@ import {
   LoginUserSchema,
   RegisterUserSchema,
 } from "@/models/user/user.schema";
+import { userSessionRepository } from "@/repositories/user-session/user-session.repository";
 import { userRepository } from "@/repositories/user/user.repository";
 import { authenticate, requirePolicy } from "@/services/auth.service";
 import { CookieService } from "@/services/cookie.service";
 import { JwtService } from "@/services/jwt.service";
 import { env } from "@/utils/env-config.util";
+import {
+  generateDeviceFingerprint,
+  getServerDeviceInfo,
+} from "@/utils/fingerprint.util";
 import { validateRequest } from "@/utils/http-handlers.util";
 import { createSalt, hashPassword } from "@/utils/string.util";
 import express, { type Router } from "express";
@@ -116,7 +122,44 @@ authenticateRouter.post(
         refreshToken,
         { maxAge: env.REFRESH_TOKEN_EXPIRES }
       );
-      APIResponseHelper.okResult(res, "");
+      //#region create session and return token
+      const fingerprint = generateDeviceFingerprint(req);
+      const deviceInfo = getServerDeviceInfo(req);
+      const newSession: IUserSession = {
+        userId: findedUser.id!,
+        deviceId: fingerprint,
+        accessToken: token,
+        refreshToken: refreshToken,
+        deviceInfo: deviceInfo,
+        isActive: true,
+        expiresAt: new Date(Date.now() + env.REFRESH_TOKEN_EXPIRES),
+      };
+      const existSession = await userSessionRepository.getAsync({
+        userId: findedUser.id,
+        deviceId: fingerprint,
+      });
+      if (existSession) {
+        newSession.id = existSession.id;
+        const updateSessionResult = await userSessionRepository.putAsync(
+          newSession
+        );
+        if (updateSessionResult) {
+          APIResponseHelper.okResult(res, existSession?.id);
+        } else {
+          APIResponseHelper.internalServerErrorResult(res);
+        }
+        return;
+      }
+
+      const newSessionResult = await userSessionRepository.postAsync(
+        newSession
+      );
+      if (newSessionResult) {
+        APIResponseHelper.okResult(res, newSessionResult.id);
+        return;
+      }
+      APIResponseHelper.failedResult(res);
+      //#endregion
     }
   }
 );

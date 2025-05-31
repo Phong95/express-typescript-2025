@@ -58,9 +58,6 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-// Indexes for better performance
-userSchema.index({ email: 1 });
-
 export interface IUserRegister {
   name: string;
   email: string;
@@ -73,4 +70,4 @@ export interface IUserLogin {
   otp?: string;
 }
 
-export const UserModel = model<IUser>("User", userSchema);
+export const UserModel = model<IUser>("Users", userSchema);
